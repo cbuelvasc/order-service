@@ -1,0 +1,54 @@
+name: 'Modular CI/CD Pipeline'
+
+on:
+    push:
+      branches:
+        - master
+        - develop
+    pull_request:
+      branches:
+        - master
+        - develop
+
+env:
+  JAVA_VERSION: '21'
+  GRADLE_VERSION: '8.13'       
+  JAVA_DISTRIBUTION: 'temurin'
+  SPRING_PROFILES: 'test'
+  
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+  statuses: write
+
+jobs:
+  # Job 1: Build and Test
+  build-and-test:
+    name: 'Build and Test'
+    runs-on: ubuntu-latest
+    outputs:
+      cache-hit: ${{ steps.cache.outputs.cache-hit }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java Base
+        uses: cbuelvasc/actions/setup-java-base@master
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          java-distribution: ${{ env.JAVA_DISTRIBUTION }}
+          spring-profiles: ${{ env.SPRING_PROFILES }}
+
+      - name: Setup Cache Only
+        id: cache
+        uses: cbuelvasc/actions/cache-manager@master
+        with:
+          build-tool: 'gradle'
+          cache-strategy: 'dependencies-cache'
+
+      - name: Validate Build Configuration
+        run: |
+          if [ -f gradlew ]; then
+            ./gradlew clean check --dry-run
+          fi
