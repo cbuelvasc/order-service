@@ -1,0 +1,37 @@
+spring:
+  # H2 Database for testing
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  
+  # JPA/Hibernate settings for tests
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+  
+  # Disable actuator endpoints in tests except health
+  management:
+    endpoints:
+      enabled-by-default: false
+      web:
+        exposure:
+          include: health
+    endpoint:
+      health:
+        enabled: true
+
+# Logging configuration for tests
+logging:
+  level:
+    org.springframework: WARN
+    org.hibernate: WARN
+    com.xeppelin.orderservice: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" 
