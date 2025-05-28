@@ -15,6 +15,7 @@ env:
   GRADLE_VERSION: '8.13'       
   JAVA_DISTRIBUTION: 'temurin'
   SPRING_PROFILES: 'test'
+  CACHE_KEY_SUFFIX: 'order-service-optimized'
   
 permissions:
   contents: read
@@ -33,7 +34,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Java Base
+      - name: Setup Java Environment
         uses: cbuelvasc/actions/setup-java-base@master
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -45,10 +46,22 @@ jobs:
         uses: cbuelvasc/actions/cache-manager@master
         with:
           build-tool: 'gradle'
-          cache-strategy: 'dependencies-cache'
+          cache-strategy: 'all'
+          cache-key-suffix: ${{ env.CACHE_KEY_SUFFIX }}
 
       - name: Validate Build Configuration
         run: |
           if [ -f gradlew ]; then
             ./gradlew clean check --dry-run
           fi
+
+      - name: Run Service-Specific Tests
+        uses: cbuelvasc/actions/test-runner@master
+        with:
+          build-tool: 'gradle'
+          working-directory: '.'
+          test-command: './gradlew clean test integrationTest contractTest'
+          coverage-enabled: true
+          coverage-threshold: '85'
+          fail-on-coverage-threshold: true
+          publish-test-results: true    
