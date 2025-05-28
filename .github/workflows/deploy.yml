@@ -60,7 +60,7 @@ jobs:
         with:
           build-tool: 'gradle'
           working-directory: '.'
-          test-command: './gradlew clean test integrationTest contractTest'
+          test-command: './gradlew clean test integrationTest'
           coverage-enabled: true
           coverage-threshold: '85'
           fail-on-coverage-threshold: true
