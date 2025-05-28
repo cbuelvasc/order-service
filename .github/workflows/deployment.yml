@@ -23,29 +23,35 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4        
         
-      - name: Setup Java & Gradle Environment
-        uses: cbuelvasc/actions/setup-java-gradle-env@master
+      - name: Run Spring Boot Test Suite
+        id: test-suite
+        uses: cbuelvasc/actions/spring-boot-test-suite@master
         with:
           java-version: ${{ env.JAVA_VERSION }}
           java-distribution: 'temurin'
-          gradle-version: ${{ env.GRADLE_VERSION }}
-          cache-strategy: 'all'
-          jvm-args: '-Xmx4g -XX:+UseG1GC -XX:MaxGCPauseMillis=200'
+          build-tool: 'gradle'
+          coverage-enabled: 'true'
+          coverage-threshold: '80'
+          fail-on-coverage-threshold: 'false'
           spring-profiles: 'test'
-          gradle-args: '--no-daemon --parallel'
+          parallel-tests: 'true'
+          integration-tests: 'true'
+          gradle-args: '--no-daemon --parallel --build-cache'
+          jvm-args: '-Xmx4g -XX:+UseG1GC -XX:MaxGCPauseMillis=200'
+          cache-enabled: 'true'
+          publish-test-results: 'true'
           
-      - name: Download Dependencies
-        run: ./gradlew dependencies --no-daemon
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.caching=true -Dorg.gradle.parallel=true"
-          
-      - name: Run Tests with Coverage
-        run: ./gradlew test jacocoTestReport --no-daemon
-        env:
-          SPRING_PROFILES_ACTIVE: test
-          GRADLE_OPTS: "-Dorg.gradle.caching=true -Dorg.gradle.parallel=true"
-          
-      - name: Build Application
+      - name: Build Application (without tests)
         run: ./gradlew build -x test --no-daemon
         env:
           GRADLE_OPTS: "-Dorg.gradle.caching=true -Dorg.gradle.parallel=true"
+          
+      - name: Display Test Results Summary
+        run: |
+          echo "🧪 Test Results Summary:"
+          echo "✅ Test execution result: ${{ steps.test-suite.outputs.test-result }}"
+          echo "📊 Total tests executed: ${{ steps.test-suite.outputs.test-count }}"
+          echo "❌ Failed tests: ${{ steps.test-suite.outputs.failed-test-count }}"
+          echo "📈 Code coverage: ${{ steps.test-suite.outputs.coverage-percentage }}%"
+          echo "🗂️ Cache hit: ${{ steps.test-suite.outputs.cache-hit }}"
+          echo "🔧 Build tool version: ${{ steps.test-suite.outputs.build-tool-version }}"
