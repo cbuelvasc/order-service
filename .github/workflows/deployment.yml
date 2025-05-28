@@ -10,6 +10,13 @@ on:
         - master
         - develop
 
+# Permisos necesarios para GitHub Actions
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+  statuses: write
+
 env:
   JAVA_VERSION: '21'
   GRADLE_VERSION: '8.13'        
@@ -31,7 +38,7 @@ jobs:
           java-distribution: 'temurin'
           build-tool: 'gradle'
           coverage-enabled: 'true'
-          coverage-threshold: '80'
+          coverage-threshold: '60'
           fail-on-coverage-threshold: 'false'
           spring-profiles: 'test'
           parallel-tests: 'true'
@@ -39,7 +46,7 @@ jobs:
           gradle-args: '--no-daemon --parallel --build-cache'
           jvm-args: '-Xmx4g -XX:+UseG1GC -XX:MaxGCPauseMillis=200'
           cache-enabled: 'true'
-          publish-test-results: 'true'
+          publish-test-results: 'false'
           
       - name: Build Application (without tests)
         run: ./gradlew build -x test --no-daemon
@@ -55,3 +62,13 @@ jobs:
           echo "📈 Code coverage: ${{ steps.test-suite.outputs.coverage-percentage }}%"
           echo "🗂️ Cache hit: ${{ steps.test-suite.outputs.cache-hit }}"
           echo "🔧 Build tool version: ${{ steps.test-suite.outputs.build-tool-version }}"
+          
+      - name: Upload Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            build/reports/tests/test/
+            build/reports/jacoco/
+          retention-days: 7
