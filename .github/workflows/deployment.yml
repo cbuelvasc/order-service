@@ -11,7 +11,6 @@ on:
         - develop
 
 env:
-  SERVICE_NAME: order-service
   JAVA_VERSION: '21'
   GRADLE_VERSION: '8.13'        
 
@@ -20,12 +19,9 @@ jobs:
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: order-service
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4        
         
       - name: Setup Java & Gradle Environment
         uses: cbuelvasc/actions/setup-java-gradle-env@master
@@ -38,18 +34,18 @@ jobs:
           spring-profiles: 'test'
           gradle-args: '--no-daemon --parallel'
           
-      - name: Download dependencies
+      - name: Download Dependencies
         run: ./gradlew dependencies --no-daemon
         env:
           GRADLE_OPTS: "-Dorg.gradle.caching=true -Dorg.gradle.parallel=true"
           
-      - name: Run tests with coverage
+      - name: Run Tests with Coverage
         run: ./gradlew test jacocoTestReport --no-daemon
         env:
           SPRING_PROFILES_ACTIVE: test
           GRADLE_OPTS: "-Dorg.gradle.caching=true -Dorg.gradle.parallel=true"
           
-      - name: Build application
+      - name: Build Application
         run: ./gradlew build -x test --no-daemon
         env:
           GRADLE_OPTS: "-Dorg.gradle.caching=true -Dorg.gradle.parallel=true"
