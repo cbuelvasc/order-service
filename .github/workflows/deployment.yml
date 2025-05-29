@@ -19,7 +19,9 @@ permissions:
 
 env:
   JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: 'temurin'
   GRADLE_VERSION: '8.13'        
+  CACHE_KEY_SUFFIX: 'v1'
 
 jobs:
   # Job 1: Build and Test
@@ -72,3 +74,79 @@ jobs:
             build/reports/tests/test/
             build/reports/jacoco/
           retention-days: 7
+
+  docker-build:
+      name: 'Build Docker Image'
+      runs-on: ubuntu-latest
+      needs: build-and-test
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+      permissions:
+        contents: read
+        packages: write
+      outputs:
+        image-digest: ${{ steps.docker.outputs.image-digest }}
+        image-full-name: ${{ steps.docker.outputs.image-full-name }}
+        image-id: ${{ steps.docker.outputs.image-id }}
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+
+        - name: Setup Java Environment
+          uses: cbuelvasc/actions/setup-java-base@master
+          with:
+            java-version: ${{ env.JAVA_VERSION }}
+            java-distribution: ${{ env.JAVA_DISTRIBUTION }}
+            spring-profiles: 'prod'
+
+        - name: Restore Cache
+          uses: cbuelvasc/actions/cache-manager@master
+          with:
+            build-tool: 'gradle'
+            cache-strategy: 'all'
+            cache-key-suffix: ${{ env.CACHE_KEY_SUFFIX }}
+
+        - name: Build Docker Image
+          id: docker
+          uses: cbuelvasc/actions/docker-build@master
+          with:
+            build-tool: 'gradle'
+            image-name: 'cbuelvasc/order-service'
+            image-tag: '${{ github.sha }}'
+            java-version: ${{ env.JAVA_VERSION }}
+            java-distribution: ${{ env.JAVA_DISTRIBUTION }}
+            spring-profiles: 'prod'
+            platforms: 'linux/amd64'
+            push: ${{ github.event_name == 'push' && 'true' || 'false' }}
+            registry-url: 'ghcr.io'
+            registry-username: ${{ github.actor }}
+            registry-password: ${{ secrets.GITHUB_TOKEN }}
+            cache-strategy: 'all'
+            dockerfile: 'Dockerfile'
+            context: '.'
+            build-args: |
+              BUILD_DATE=${{ github.event.head_commit.timestamp }}
+              VCS_REF=${{ github.sha }}
+              VERSION=${{ github.ref_name }}
+
+  deploy:
+    name: 'Deploy Application'
+    runs-on: ubuntu-latest
+    needs: [build-and-test, docker-build]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Production
+        run: |
+          echo "🚀 Deploying application to production..."
+          echo "📦 Docker Image: ${{ needs.docker-build.outputs.image-full-name }}"
+          echo "🔗 Image Digest: ${{ needs.docker-build.outputs.image-digest }}"
+          echo "🆔 Image ID: ${{ needs.docker-build.outputs.image-id }}"
+          
+          # Here you would add your actual deployment logic
+          # For example: kubectl, docker-compose, or cloud provider deployments
+          
+          echo "✅ Deployment completed successfully"
+
+            
