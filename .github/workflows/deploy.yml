@@ -54,7 +54,7 @@ jobs:
             ./gradlew clean check --dry-run
           fi
 
-      - name: Run Service-Specific Tests
+      - name: Run Service Tests
         uses: cbuelvasc/actions/test-runner@master
         with:
           build-tool: 'gradle'
