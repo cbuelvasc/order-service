@@ -96,14 +96,6 @@ jobs:
           cache-strategy: 'all'
           cache-key-suffix: ${{ env.CACHE_KEY_SUFFIX }}
 
-      - name: Log in to GitHub Container Registry
-        if: github.event_name == 'push'
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build Docker Image
         id: docker
         uses: cbuelvasc/actions/docker-build@master
