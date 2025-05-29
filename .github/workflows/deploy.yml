@@ -98,6 +98,7 @@ jobs:
         with:
           build-tool: 'gradle'
           image-name: 'cbuelvasc/order-service'
+          image-tag: ${{ github.ref_name }}
           java-version: ${{ env.JAVA_VERSION }}
           java-distribution: ${{ env.JAVA_DISTRIBUTION }}
           spring-profiles: 'prod'
@@ -112,7 +113,7 @@ jobs:
           build-args: |
             BUILD_DATE=${{ github.event.head_commit.timestamp }}
             VCS_REF=${{ github.sha }}
-            VERSION=latest
+            VERSION=${{ github.ref_name }}
 
   deploy:
     name: 'Deploy Application'
