@@ -59,7 +59,7 @@ jobs:
         uses: cbuelvasc/actions/test-runner@master
         with:
           build-tool: 'gradle'
-          working-directory: '.'
+          working-directory: './'
           test-command: './gradlew clean test integrationTest'
           coverage-enabled: true
           coverage-threshold: '85'
