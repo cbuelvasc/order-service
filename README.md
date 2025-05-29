@@ -41,15 +41,34 @@ cd order-service
 
 ### Docker Deployment
 
+#### Local Docker Build
 ```bash
-# Build Docker image
+# Build Docker image locally
 docker build -t order-service:latest .
 
-# Run with Docker
+# Run locally built image
 docker run -p 8080:8080 order-service:latest
 
-# Run with Docker Compose (if available)
-docker-compose up -d
+# Build with specific tag
+docker build -t order-service:dev .
+```
+
+#### Using Pre-built Images
+
+```bash
+# Using pre-built image from registry
+docker pull ghcr.io/cbuelvasc/order-service:latest
+docker run -p 8080:8080 ghcr.io/cbuelvasc/order-service:latest
+
+# With environment variables
+docker run -p 8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  -e TZ=America/New_York \
+  ghcr.io/cbuelvasc/order-service:latest
+
+# Using specific version (commit hash)
+docker pull ghcr.io/cbuelvasc/order-service:[commit-hash]
+docker run -p 8080:8080 ghcr.io/cbuelvasc/order-service:[commit-hash]
 ```
 
 ### Accessing the Application
@@ -240,6 +259,10 @@ docker run -p 8080:8080 \
   -e SPRING_PROFILES_ACTIVE=prod \
   -e TZ=America/New_York \
   ghcr.io/cbuelvasc/order-service:latest
+
+# Using specific version (commit hash)
+docker pull ghcr.io/cbuelvasc/order-service:[commit-hash]
+docker run -p 8080:8080 ghcr.io/cbuelvasc/order-service:[commit-hash]
 ```
 
 ## 🤝 Contributing
@@ -275,6 +298,25 @@ If you encounter `403 Forbidden` when pushing to GHCR:
 3. **Package Permissions**:
    - Ensure the package allows write access
    - Check if the package exists and is accessible
+
+#### Docker Push 400 Bad Request Error
+If you encounter `400 Bad Request` when pushing to GHCR:
+
+1. **Check Image Name Format**:
+   - GHCR requires format: `ghcr.io/[username]/[image-name]:[tag]`
+   - Verify the image name includes the username/organization
+
+2. **Registry Authentication**:
+   ```bash
+   # Ensure proper authentication
+   docker login ghcr.io -u [username] -p [token]
+   ```
+
+3. **Image Name Validation**:
+   ```bash
+   # Check if image name follows GHCR naming conventions
+   # Must be lowercase and follow container naming rules
+   ```
 
 #### Test Coverage Issues
 ```bash

@@ -96,12 +96,20 @@ jobs:
           cache-strategy: 'all'
           cache-key-suffix: ${{ env.CACHE_KEY_SUFFIX }}
 
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build Docker Image
         id: docker
         uses: cbuelvasc/actions/docker-build@master
         with:
           build-tool: 'gradle'
-          image-name: 'order-service'
+          image-name: 'cbuelvasc/order-service'
           image-tag: '${{ github.sha }}'
           java-version: ${{ env.JAVA_VERSION }}
           java-distribution: ${{ env.JAVA_DISTRIBUTION }}
