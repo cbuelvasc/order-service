@@ -50,7 +50,7 @@ jacoco {
 
 jacocoTestReport {
 	dependsOn test
-	executionData fileTree(dir: "$buildDir/jacoco", include: "**/*.exec")
+	executionData fileTree(dir: layout.buildDirectory.dir("jacoco"), include: "**/*.exec")
 	
 	afterEvaluate {
 		classDirectories.setFrom(files(classDirectories.files.collect {
