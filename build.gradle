@@ -50,6 +50,18 @@ jacoco {
 
 jacocoTestReport {
 	dependsOn test
+	executionData fileTree(dir: "$buildDir/jacoco", include: "**/*.exec")
+	
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: [
+				'**/OrderServiceApplication.class',
+				'**/configuration/**',
+				'**/config/**'
+			])
+		}))
+	}
+	
 	reports {
 		xml.required = true
 		html.required = true
@@ -59,10 +71,33 @@ jacocoTestReport {
 }
 
 jacocoTestCoverageVerification {
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: [
+				'**/OrderServiceApplication.class',
+				'**/configuration/**',
+				'**/config/**'
+			])
+		}))
+	}
+	
 	violationRules {
 		rule {
 			limit {
-				minimum = 0.60
+				minimum = 0.80  // Overall coverage
+			}
+		}
+		rule {
+			element = 'CLASS'
+			excludes = [
+				'com.xeppelin.orderservice.OrderServiceApplication',
+				'com.xeppelin.orderservice.configuration.*',
+				'com.xeppelin.orderservice.config.*'
+			]
+			limit {
+				counter = 'LINE'
+				value = 'COVEREDRATIO'
+				minimum = 0.75  // Individual class coverage minimum
 			}
 		}
 	}
@@ -81,6 +116,14 @@ task integrationTest(type: Test) {
 	
 	include '**/*IT.*'
 	include '**/*IntegrationTest.*'
+	include '**/*Integration.*'
 	
+	shouldRunAfter test
 	finalizedBy jacocoTestReport
+	
+	// Configure test logging
+	testLogging {
+		events "passed", "skipped", "failed"
+		exceptionFormat "full"
+	}
 }

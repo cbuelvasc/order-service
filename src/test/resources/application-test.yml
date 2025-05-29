@@ -1,37 +1,40 @@
 spring:
+  config:
+    activate:
+      on-profile: test
+  
   # H2 Database for testing
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
-    password:
+    password: password
+  h2:
+    console:
+      enabled: true
   
   # JPA/Hibernate settings for tests
   jpa:
+    show-sql: false
     hibernate:
       ddl-auto: create-drop
-    show-sql: false
-    properties:
-      hibernate:
-        format_sql: false
-        use_sql_comments: false
-  
-  # Disable actuator endpoints in tests except health
-  management:
-    endpoints:
-      enabled-by-default: false
-      web:
-        exposure:
-          include: health
-    endpoint:
-      health:
-        enabled: true
+    database-platform: org.hibernate.dialect.H2Dialect
+
+# Disable actuator endpoints in tests except health
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
 
 # Logging configuration for tests
 logging:
   level:
-    org.springframework: WARN
-    org.hibernate: WARN
     com.xeppelin.orderservice: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
   pattern:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" 
