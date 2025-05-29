@@ -101,7 +101,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           java-distribution: ${{ env.JAVA_DISTRIBUTION }}
           spring-profiles: 'prod'
-          platforms: 'linux/amd64,linux/arm64'
+          platforms: 'linux/amd64'
           push: ${{ github.event_name == 'push' && 'true' || 'false' }}
           registry-url: 'ghcr.io'
           registry-username: ${{ github.actor }}
