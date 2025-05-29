@@ -24,7 +24,6 @@ permissions:
   statuses: write
 
 jobs:
-  # Job 1: Build and Test
   build-and-test:
     name: 'Build and Test'
     runs-on: ubuntu-latest
@@ -59,7 +58,7 @@ jobs:
         uses: cbuelvasc/actions/test-runner@master
         with:
           build-tool: 'gradle'
-          working-directory: './'
+          working-directory: '.'
           test-command: './gradlew clean test integrationTest'
           coverage-enabled: true
           coverage-threshold: '85'
