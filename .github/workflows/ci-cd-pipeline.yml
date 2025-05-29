@@ -1,0 +1,100 @@
+name: 'Order Service CI/CD Pipeline'
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+        - dev
+        - staging
+        - prod
+      docker-enabled:
+        description: 'Enable Docker build'
+        required: false
+        type: boolean
+        default: true
+      push-enabled:
+        description: 'Push to registry'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  pipeline:
+    name: 'Complete CI/CD Pipeline'
+    uses: cbuelvasc/actions/.github/workflows/ci-cd-pipeline.yml@master
+    with:
+      # Build Configuration
+      build-tool: 'gradle'
+      java-version: '21'
+      
+      # Service Configuration
+      service-name: 'order-service'
+      working-directory: '.'
+      
+      # Test Configuration
+      spring-profiles: 'test'
+      coverage-enabled: true
+      coverage-threshold: '80'
+      
+      # Docker Configuration
+      docker-enabled: ${{ github.event.inputs.docker-enabled || 'true' }}
+      image-name: 'order-service'
+      image-tag: ${{ github.sha }}
+      
+      # Registry Configuration
+      registry-url: 'docker.io'
+      push-enabled: ${{ github.event.inputs.push-enabled || 'false' }}
+      
+      # Environment Configuration
+      environment: ${{ github.event.inputs.environment || 'dev' }}
+      
+      # Cache Configuration
+      cache-enabled: true
+    
+    secrets:
+      registry-username: ${{ secrets.DOCKER_USERNAME }}
+      registry-password: ${{ secrets.DOCKER_PASSWORD }}
+  
+  notify:
+    name: 'Pipeline Notification'
+    runs-on: ubuntu-latest
+    needs: [pipeline]
+    if: always()
+    
+    steps:
+      - name: Generate Deployment Summary
+        shell: bash
+        run: |
+          echo "# 🚀 Order Service Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "- **Pipeline Status**: ${{ needs.pipeline.outputs.pipeline-status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Status**: ${{ needs.pipeline.outputs.build-status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Docker Status**: ${{ needs.pipeline.outputs.docker-status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ github.event.inputs.environment || 'dev' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.pipeline.outputs.artifact-name }}" != "" ]; then
+            echo "## 📦 Artifacts Generated" >> $GITHUB_STEP_SUMMARY
+            echo "- **Artifact**: ${{ needs.pipeline.outputs.artifact-name }}:${{ needs.pipeline.outputs.artifact-version }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.pipeline.outputs.image-full-name }}" != "" ]; then
+            echo "- **Docker Image**: ${{ needs.pipeline.outputs.image-full-name }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## 🐳 Docker Commands" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+            echo "# Pull and run the Order Service" >> $GITHUB_STEP_SUMMARY
+            echo "docker pull ${{ needs.pipeline.outputs.image-full-name }}" >> $GITHUB_STEP_SUMMARY
+            echo "docker run -d --name order-service -p 8080:8080 ${{ needs.pipeline.outputs.image-full-name }}" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi 
