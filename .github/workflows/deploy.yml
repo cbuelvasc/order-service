@@ -22,6 +22,7 @@ permissions:
   checks: write
   pull-requests: write
   statuses: write
+  packages: write
 
 jobs:
   build-and-test:
@@ -70,6 +71,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-test
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+    permissions:
+      contents: read
+      packages: write
     outputs:
       image-digest: ${{ steps.docker.outputs.image-digest }}
       image-full-name: ${{ steps.docker.outputs.image-full-name }}
@@ -97,7 +101,7 @@ jobs:
         uses: cbuelvasc/actions/docker-build@master
         with:
           build-tool: 'gradle'
-          image-name: 'cbuelvasc/order-service'
+          image-name: 'order-service'
           image-tag: '${{ github.sha }}'
           java-version: ${{ env.JAVA_VERSION }}
           java-distribution: ${{ env.JAVA_DISTRIBUTION }}

@@ -158,7 +158,25 @@ The pipeline runs automatically on:
 - Checkstyle configuration in `checkstyle.xml`
 - All code must pass Checkstyle validation
 
-## 🔧 Configuration
+## 📋 Configuration
+
+### GitHub Container Registry Setup
+
+For the CI/CD pipeline to successfully push Docker images to GHCR, ensure:
+
+1. **Repository Settings**: 
+   - Go to your repository → Settings → Actions → General
+   - Under "Workflow permissions", select "Read and write permissions"
+   - Check "Allow GitHub Actions to create and approve pull requests"
+
+2. **Package Visibility** (after first push):
+   - Go to your GitHub profile → Packages
+   - Find the `order-service` package
+   - Go to Package settings → Change visibility to Public (if desired)
+
+3. **Workflow Permissions**: 
+   - The workflow includes `packages: write` permission
+   - Uses `GITHUB_TOKEN` for authentication
 
 ### Application Properties
 - Development: `src/main/resources/application.properties`
@@ -233,6 +251,48 @@ docker run -p 8080:8080 \
 5. Run code quality checks: `./gradlew checkstyleMain checkstyleTest`
 6. Build and test Docker image: `docker build -t order-service:test .`
 7. Create a pull request
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### Docker Push 403 Forbidden Error
+If you encounter `403 Forbidden` when pushing to GHCR:
+
+1. **Check Repository Permissions**:
+   ```bash
+   # Verify your repository has correct workflow permissions
+   # Go to Settings → Actions → General → Workflow permissions
+   # Select "Read and write permissions"
+   ```
+
+2. **Manual Token Test**:
+   ```bash
+   # Test GHCR access manually
+   echo $GITHUB_TOKEN | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+   ```
+
+3. **Package Permissions**:
+   - Ensure the package allows write access
+   - Check if the package exists and is accessible
+
+#### Test Coverage Issues
+```bash
+# Run coverage report to see current coverage
+./gradlew jacocoTestReport
+
+# Check coverage details
+open build/reports/jacoco/test/html/index.html
+```
+
+#### Build Failures
+```bash
+# Clean build to resolve dependency issues
+./gradlew clean build
+
+# Check for dependency conflicts
+./gradlew dependencies
+```
 
 ## 📞 Support
 
