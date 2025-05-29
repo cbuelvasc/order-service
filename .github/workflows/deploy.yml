@@ -97,8 +97,8 @@ jobs:
         uses: cbuelvasc/actions/docker-build@master
         with:
           build-tool: 'gradle'
-          image-name: 'order-service'
-          image-tag: ${{ github.ref_name }}
+          image-name: 'cbuelvasc/order-service'
+          image-tag: ${{ github.ref_name == 'master' && 'latest' || github.ref_name }}
           java-version: ${{ env.JAVA_VERSION }}
           java-distribution: ${{ env.JAVA_DISTRIBUTION }}
           spring-profiles: 'prod'
@@ -113,7 +113,7 @@ jobs:
           build-args: |
             BUILD_DATE=${{ github.event.head_commit.timestamp }}
             VCS_REF=${{ github.sha }}
-            VERSION=${{ github.ref_name }}
+            VERSION=latest
 
   deploy:
     name: 'Deploy Application'
