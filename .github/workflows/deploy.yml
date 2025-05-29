@@ -98,7 +98,7 @@ jobs:
         with:
           build-tool: 'gradle'
           image-name: 'cbuelvasc/order-service'
-          image-tag: ${{ github.ref_name }}
+          image-tag: '${{ github.sha }}'
           java-version: ${{ env.JAVA_VERSION }}
           java-distribution: ${{ env.JAVA_DISTRIBUTION }}
           spring-profiles: 'prod'
