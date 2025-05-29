@@ -46,13 +46,13 @@ jobs:
       coverage-threshold: '80'
       
       # Docker Configuration
-      docker-enabled: ${{ github.event.inputs.docker-enabled || 'true' }}
+      docker-enabled: ${{ github.event.inputs.docker-enabled || true }}
       image-name: 'order-service'
       image-tag: ${{ github.sha }}
       
       # Registry Configuration
       registry-url: 'docker.io'
-      push-enabled: ${{ github.event.inputs.push-enabled || 'false' }}
+      push-enabled: ${{ github.event.inputs.push-enabled || false }}
       
       # Environment Configuration
       environment: ${{ github.event.inputs.environment || 'dev' }}
