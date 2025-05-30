@@ -43,7 +43,7 @@ jobs:
       # Test Configuration
       spring-profiles: 'test'
       coverage-enabled: true
-      coverage-threshold: '80'
+      coverage-threshold: '85'
       
       # Docker Configuration
       docker-enabled: ${{ github.event.inputs.docker-enabled || true }}
